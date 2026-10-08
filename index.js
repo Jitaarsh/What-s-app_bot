@@ -18,6 +18,11 @@ if (!APP_SECRET) console.warn("WARNING: APP_SECRET not set, webhook signatures a
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.originalUrl);
+  next();
+});
+
 // keep the raw body so we can check Meta's signature
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 
@@ -44,6 +49,7 @@ app.get("/webhook", (req, res) => {
 
 // incoming messages
 app.post("/webhook", (req, res) => {
+  console.log("WEBHOOK BODY:", JSON.stringify(req.body));
   if (!validSignature(req)) return res.sendStatus(401);
 
   // always ack fast, Meta retries if you're slow
